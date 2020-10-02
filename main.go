@@ -11,7 +11,7 @@ import (
 
 // Handler
 func healthCheck(c echo.Context) error {
-	return c.String(http.StatusOK, "Service is running")
+	return c.String(http.StatusOK, "Service is running properly")
 }
 
 func setCorsHeader(next echo.HandlerFunc) echo.HandlerFunc {
@@ -22,7 +22,7 @@ func setCorsHeader(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func loadConfig() {
-	viper.SetConfigFile(`config.json`)
+	viper.SetConfigFile(`configs.json`)
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(err)
@@ -48,5 +48,5 @@ func main() {
 	httpServer.GET("/", healthCheck)
 
 	// Start server
-	httpServer.Logger.Fatal(httpServer.Start(viper.GetString("server.address")))
+	httpServer.Logger.Fatal(httpServer.Start(viper.GetString("server.port")))
 }
