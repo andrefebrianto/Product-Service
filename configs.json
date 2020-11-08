@@ -6,11 +6,24 @@
     "context":{
         "timeout":2
     },
-    "database": {
-        "host": "mysql",
-        "port": "3306",
-        "user": "user",
-        "pass": "password",
-        "name": "article"
-    }
+    "postgreSQL": [
+        {
+            "id": "transaction-db",
+            "uri": "postgresql://@localhost:5432/local"
+        },
+        {
+            "id": "product-db",
+            "uri": "postgresql://@localhost:5432/local"
+        },
+        {
+            "id": "user-db",
+            "uri": "postgresql://@localhost:5432/local"
+        }
+    ],
+    "mongoDB": [
+        {
+            "id": "",
+            "uri": ""
+        }
+    ]
 }

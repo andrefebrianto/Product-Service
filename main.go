@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/andrefebrianto/rest-api/src/utilities/databases/postgresql"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
@@ -21,20 +23,23 @@ func setCorsHeader(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func loadConfig() {
-	viper.SetConfigFile(`configs.json`)
-	err := viper.ReadInConfig()
+func loadConfig() *viper.Viper {
+	config := viper.New()
+	config.SetConfigFile(`configs.json`)
+	err := config.ReadInConfig()
 	if err != nil {
 		panic(err)
 	}
 
-	if viper.GetBool(`debug`) {
+	if config.GetBool(`debug`) {
 		fmt.Println("Service RUN on DEBUG mode")
 	}
+
+	return config
 }
 
 func main() {
-	loadConfig()
+	config := loadConfig()
 
 	// Echo instance
 	httpServer := echo.New()
@@ -47,6 +52,22 @@ func main() {
 	// Routes
 	httpServer.GET("/", healthCheck)
 
+	var postgreSQLConfigs []map[string]interface{}
+	err := config.UnmarshalKey("postgreSQL", &postgreSQLConfigs)
+	if err != nil {
+		panic(err)
+	}
+
+	// postgreSQLConnectionPool := postgresql.ConnectionPool{}
+	postgreSQLConnectionPool := postgresql.InitConnection(postgreSQLConfigs)
+	fmt.Println(postgreSQLConnectionPool.Connections)
+
+	var mongoDBConfigs []map[string]interface{}
+	err = config.UnmarshalKey("mongoDB", &mongoDBConfigs)
+	if err != nil {
+		panic(err)
+	}
+
 	// Start server
-	httpServer.Logger.Fatal(httpServer.Start(viper.GetString("server.port")))
+	// httpServer.Logger.Fatal(httpServer.Start(viper.GetString("server.port")))
 }
