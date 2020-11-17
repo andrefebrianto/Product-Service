@@ -58,9 +58,9 @@ func main() {
 		panic(err)
 	}
 
-	// postgreSQLConnectionPool := postgresql.ConnectionPool{}
-	postgreSQLConnectionPool := postgresql.InitConnection(postgreSQLConfigs)
-	fmt.Println(postgreSQLConnectionPool.Connections)
+	//Initialize database
+	postgresql.InitConnection(postgreSQLConfigs)
+	// connection, err := postgresql.GetConnection("transaction-db")
 
 	var mongoDBConfigs []map[string]interface{}
 	err = config.UnmarshalKey("mongoDB", &mongoDBConfigs)

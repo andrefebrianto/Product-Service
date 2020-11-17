@@ -22,8 +22,8 @@
     ],
     "mongoDB": [
         {
-            "id": "",
-            "uri": ""
+            "id": "transaction-db",
+            "uri": "postgresql://@localhost:5432/local"
         }
     ]
 }

@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/go-pg/pg/v10"
 )
@@ -13,13 +14,15 @@ type dbConnection struct {
 
 //ConnectionPool ...
 type ConnectionPool struct {
-	Connections []dbConnection
+	connections []dbConnection
 }
 
-//InitConnection ...
-func InitConnection(configs []map[string]interface{}) ConnectionPool {
-	connectionPool := ConnectionPool{}
+var (
+	connectionPools ConnectionPool
+)
 
+//InitConnection ...
+func InitConnection(configs []map[string]interface{}) {
 	for _, config := range configs {
 		newConnection := dbConnection{}
 		id := config["id"].(string)
@@ -30,20 +33,15 @@ func InitConnection(configs []map[string]interface{}) ConnectionPool {
 			User: "postgres",
 		})
 
-		connectionPool.Connections = append(connectionPool.Connections, newConnection)
+		connectionPools.connections = append(connectionPools.connections, newConnection)
 	}
-
-	return connectionPool
 }
 
 //GetConnection ...
-func (connectionPool *ConnectionPool) GetConnection(id string) (interface{}, error) {
-	for _, connection := range connectionPool.Connections {
+func GetConnection(id string) (interface{}, error) {
+	fmt.Println(connectionPools)
+	for _, connection := range connectionPools.connections {
 		if connection.id == id {
-			// context := context.Background()
-			// if err := connection.db.Ping(context); err != nil {
-			// 	return nil, err
-			// }
 			return connection.db, nil
 		}
 	}

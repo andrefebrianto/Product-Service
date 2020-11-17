@@ -2,12 +2,27 @@ package queries
 
 import (
 	"context"
+	"errors"
 
-	models "github.com/andrefebrianto/rest-api/bin/models"
+	models "github.com/andrefebrianto/rest-api/src/models"
 )
 
-//BrandQueries represent query function for brand domain
-type BrandQueries interface {
-	Get(context context.Context) ([]models.Brand, error)
-	GetByID(context context.Context, id string) (models.Brand, error)
+//BrandQuery ...
+type BrandQuery struct {
+	dbConnection interface{}
+}
+
+//CreateRepository ...
+func CreateRepository(connection interface{}) *BrandQuery {
+	return &BrandQuery{connection}
+}
+
+//GetBrands ...
+func (query BrandQuery) GetBrands(context context.Context, limit, page int) ([]models.Brand, error) {
+	return nil, errors.New("Brand(s) not found")
+}
+
+//GetBrandByID ...
+func (query BrandQuery) GetBrandByID(context context.Context, id string) (*models.Brand, error) {
+	return nil, errors.New("Brand not found")
 }
