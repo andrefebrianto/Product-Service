@@ -69,5 +69,5 @@ func main() {
 	}
 
 	// Start server
-	// httpServer.Logger.Fatal(httpServer.Start(viper.GetString("server.port")))
+	httpServer.Logger.Fatal(httpServer.Start(config.GetString("server.port")))
 }

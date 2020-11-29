@@ -8,7 +8,7 @@ import (
 
 // ProductCommand represent command function for product domain
 type ProductCommand interface {
-	CreateProduct(context context.Context, product *models.Product) ([]models.Product, error)
+	CreateProduct(context context.Context, product *models.Product) (*models.Product, error)
 	UpdateProduct(context context.Context, product *models.Product) (*models.Product, error)
 	DeleteProduct(context context.Context, id string) error
 }

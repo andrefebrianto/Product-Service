@@ -35,6 +35,7 @@ func InitConnection(configs []map[string]interface{}) {
 
 		connectionPools.connections = append(connectionPools.connections, newConnection)
 	}
+	fmt.Println(connectionPools)
 }
 
 //GetConnection ...
