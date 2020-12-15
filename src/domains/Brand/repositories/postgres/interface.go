@@ -8,7 +8,7 @@ import (
 
 //BrandCommands represent query function for brand domain
 type BrandCommands interface {
-	CreateBrand(context context.Context, brand *models.Brand) ([]models.Brand, error)
+	CreateBrand(context context.Context, brand *models.Brand) (*models.Brand, error)
 	UpdateBrand(context context.Context, product *models.Brand) (*models.Brand, error)
 	DeleteBrand(context context.Context, id string) error
 }

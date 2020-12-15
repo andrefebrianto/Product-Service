@@ -33,7 +33,7 @@ func (useCase *productUseCase) UpdateProduct(mainContext context.Context, produc
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
-	updatedProduct, err := useCase.UpdateProduct(contextWithTimeout, product)
+	updatedProduct, err := useCase.commandRepository.UpdateProduct(contextWithTimeout, product)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (useCase *productUseCase) GetProducts(mainContext context.Context, limit, p
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
-	products, err := useCase.GetProducts(contextWithTimeout, limit, page)
+	products, err := useCase.queryRepository.GetProducts(contextWithTimeout, limit, page)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (useCase *productUseCase) GetProductByID(mainContext context.Context, id st
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
-	product, err := useCase.GetProductByID(contextWithTimeout, id)
+	product, err := useCase.queryRepository.GetProductByID(contextWithTimeout, id)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (useCase *productUseCase) GetProductByBrandID(mainContext context.Context, 
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
-	products, err := useCase.GetProductByBrandID(contextWithTimeout, brandID, limit, page)
+	products, err := useCase.queryRepository.GetProductsByBrandID(contextWithTimeout, brandID, limit, page)
 	if err != nil {
 		return nil, err
 	}

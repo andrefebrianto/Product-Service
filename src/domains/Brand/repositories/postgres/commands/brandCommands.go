@@ -18,7 +18,7 @@ func CreateRepository(connection interface{}) *BrandCommand {
 }
 
 //CreateBrand ...
-func (command BrandCommand) CreateBrand(context context.Context, brand *models.Brand) ([]models.Brand, error) {
+func (command BrandCommand) CreateBrand(context context.Context, brand *models.Brand) (*models.Brand, error) {
 	// command.dbConnection
 	return nil, errors.New("Failed to create produt")
 }
