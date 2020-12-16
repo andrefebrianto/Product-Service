@@ -23,7 +23,7 @@ func (query ProductQuery) GetProducts(context context.Context, limit, page int) 
 	var products []models.Product
 	skip := (page - 1) * limit
 
-	err := query.dbConnection.ModelContext(context, products).Order("createdAt DESC").Offset(skip).Limit(limit).Select()
+	err := query.dbConnection.ModelContext(context, products).Order("CreatedAt DESC").Offset(skip).Limit(limit).Select()
 	if err == nil {
 		return products, nil
 	}
@@ -32,10 +32,10 @@ func (query ProductQuery) GetProducts(context context.Context, limit, page int) 
 
 //GetProductsByBrandID ...
 func (query ProductQuery) GetProductsByBrandID(context context.Context, limit, page int, brandID string) ([]models.Product, error) {
-	products := []models.Product{}
+	var products []models.Product
 	skip := (page - 1) * limit
 
-	err := query.dbConnection.ModelContext(context, products).Where("brandID", brandID).Order("createdAt DESC").Offset(skip).Limit(limit).Select()
+	err := query.dbConnection.ModelContext(context, products).Where("BrandID", brandID).Order("CreatedAt DESC").Offset(skip).Limit(limit).Select()
 	if err == nil {
 		return products, nil
 	}
@@ -46,7 +46,7 @@ func (query ProductQuery) GetProductsByBrandID(context context.Context, limit, p
 func (query ProductQuery) GetProductByID(context context.Context, id string) (*models.Product, error) {
 	product := new(models.Product)
 
-	err := query.dbConnection.ModelContext(context, product).Where("id", id).Order("createdAt DESC").Select()
+	err := query.dbConnection.ModelContext(context, product).Where("ID", id).Order("CreatedAt DESC").Select()
 	if err == nil {
 		return product, nil
 	}
