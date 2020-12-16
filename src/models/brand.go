@@ -6,8 +6,8 @@ import (
 
 //Brand datastructure for Brand domain
 type Brand struct {
-	id        string
-	name      string
-	createdAt time.Time
-	updatedAt time.Time
+	ID        string
+	Name      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
