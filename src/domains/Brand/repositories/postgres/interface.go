@@ -16,5 +16,5 @@ type BrandCommands interface {
 //BrandQueries represent query function for brand domain
 type BrandQueries interface {
 	GetBrands(context context.Context, limit, page int) ([]models.Brand, error)
-	GetBrandByID(context context.Context, id string) (models.Brand, error)
+	GetBrandByID(context context.Context, id string) (*models.Brand, error)
 }

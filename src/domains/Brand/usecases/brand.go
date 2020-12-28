@@ -14,8 +14,8 @@ type BrandUseCase struct {
 	contextTimeout    time.Duration
 }
 
-func CreateProductUseCase() *BrandUseCase {
-	return &BrandUseCase{}
+func CreateBrandUseCase(command brandrepo.BrandCommands, query brandrepo.BrandQueries) *BrandUseCase {
+	return &BrandUseCase{commandRepository: command, queryRepository: query, contextTimeout: 2}
 }
 
 func (useCase *BrandUseCase) CreateBrand(mainContext context.Context, brand *models.Brand) (*models.Brand, error) {
@@ -29,18 +29,18 @@ func (useCase *BrandUseCase) CreateBrand(mainContext context.Context, brand *mod
 	return createdBrand, nil
 }
 
-func (useCase *BrandUseCase) UpdateProduct(mainContext context.Context, brand *models.Brand) (*models.Brand, error) {
+func (useCase *BrandUseCase) UpdateBrand(mainContext context.Context, brand *models.Brand) (*models.Brand, error) {
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
-	updatedProduct, err := useCase.commandRepository.UpdateBrand(contextWithTimeout, brand)
+	updatedBrand, err := useCase.commandRepository.UpdateBrand(contextWithTimeout, brand)
 	if err != nil {
 		return nil, err
 	}
-	return updatedProduct, nil
+	return updatedBrand, nil
 }
 
-func (useCase *BrandUseCase) DeleteProduct(mainContext context.Context, id string) error {
+func (useCase *BrandUseCase) DeleteBrand(mainContext context.Context, id string) error {
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
@@ -51,13 +51,24 @@ func (useCase *BrandUseCase) DeleteProduct(mainContext context.Context, id strin
 	return nil
 }
 
-func (useCase *BrandUseCase) GetProducts(mainContext context.Context, limit, page int) ([]models.Product, error) {
+func (useCase *BrandUseCase) GetBrands(mainContext context.Context, limit, page int) ([]models.Brand, error) {
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
-	products, err := useCase.GetProducts(contextWithTimeout, limit, page)
+	brands, err := useCase.queryRepository.GetBrands(contextWithTimeout, limit, page)
 	if err != nil {
 		return nil, err
 	}
-	return products, nil
+	return brands, nil
+}
+
+func (useCase *BrandUseCase) GetBrandByID(mainContext context.Context, id string) (*models.Brand, error) {
+	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
+	defer cancel()
+
+	brand, err := useCase.queryRepository.GetBrandByID(contextWithTimeout, id)
+	if err != nil {
+		return nil, err
+	}
+	return brand, nil
 }

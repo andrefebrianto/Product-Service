@@ -8,16 +8,8 @@
     },
     "postgreSQL": [
         {
-            "id": "transaction-db",
-            "uri": "postgresql://@localhost:5432/local"
-        },
-        {
             "id": "product-db",
-            "uri": "postgresql://@localhost:5432/local"
-        },
-        {
-            "id": "user-db",
-            "uri": "postgresql://@localhost:5432/local"
+            "uri": "postgresql://@localhost:5432/project1"
         }
     ],
     "mongoDB": [

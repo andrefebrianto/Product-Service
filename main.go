@@ -68,6 +68,8 @@ func main() {
 		panic(err)
 	}
 
-	// Start server
-	httpServer.Logger.Fatal(httpServer.Start(config.GetString("server.port")))
+	brandRouters :=
+
+		// Start server
+		httpServer.Logger.Fatal(httpServer.Start(config.GetString("server.port")))
 }

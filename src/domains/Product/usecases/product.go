@@ -4,21 +4,21 @@ import (
 	"context"
 	"time"
 
-	"github.com/andrefebrianto/rest-api/src/domains/Product/repositories/postgres"
+	brandrepo "github.com/andrefebrianto/rest-api/src/domains/Product/repositories/postgres"
 	"github.com/andrefebrianto/rest-api/src/models"
 )
 
-type productUseCase struct {
-	commandRepository postgres.ProductCommand
-	queryRepository   postgres.ProductQueries
+type ProductUseCase struct {
+	commandRepository brandrepo.ProductCommand
+	queryRepository   brandrepo.ProductQueries
 	contextTimeout    time.Duration
 }
 
-func CreateProductUseCase() *productUseCase {
-	return &productUseCase{}
+func CreateProductUseCase() *ProductUseCase {
+	return &ProductUseCase{}
 }
 
-func (useCase *productUseCase) CreateProduct(mainContext context.Context, product *models.Product) (*models.Product, error) {
+func (useCase *ProductUseCase) CreateProduct(mainContext context.Context, product *models.Product) (*models.Product, error) {
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
@@ -29,7 +29,7 @@ func (useCase *productUseCase) CreateProduct(mainContext context.Context, produc
 	return createdProduct, nil
 }
 
-func (useCase *productUseCase) UpdateProduct(mainContext context.Context, product *models.Product) (*models.Product, error) {
+func (useCase *ProductUseCase) UpdateProduct(mainContext context.Context, product *models.Product) (*models.Product, error) {
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
@@ -40,7 +40,20 @@ func (useCase *productUseCase) UpdateProduct(mainContext context.Context, produc
 	return updatedProduct, nil
 }
 
-func (useCase *productUseCase) DeleteProduct(mainContext context.Context, id string) error {
+func (useCase *ProductUseCase) UpdateProductStock(mainContext context.Context, id string, stock int) (*models.Product, error) {
+	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
+	defer cancel()
+
+	product := &models.Product{ID: id, Stock: stock}
+
+	updatedProduct, err := useCase.commandRepository.UpdateProductStock(contextWithTimeout, product)
+	if err != nil {
+		return nil, err
+	}
+	return updatedProduct, nil
+}
+
+func (useCase *ProductUseCase) DeleteProduct(mainContext context.Context, id string) error {
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
@@ -51,7 +64,7 @@ func (useCase *productUseCase) DeleteProduct(mainContext context.Context, id str
 	return nil
 }
 
-func (useCase *productUseCase) GetProducts(mainContext context.Context, limit, page int) ([]models.Product, error) {
+func (useCase *ProductUseCase) GetProducts(mainContext context.Context, limit, page int) ([]models.Product, error) {
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
@@ -62,7 +75,7 @@ func (useCase *productUseCase) GetProducts(mainContext context.Context, limit, p
 	return products, nil
 }
 
-func (useCase *productUseCase) GetProductByID(mainContext context.Context, id string) (*models.Product, error) {
+func (useCase *ProductUseCase) GetProductByID(mainContext context.Context, id string) (*models.Product, error) {
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
@@ -73,7 +86,7 @@ func (useCase *productUseCase) GetProductByID(mainContext context.Context, id st
 	return product, nil
 }
 
-func (useCase *productUseCase) GetProductByBrandID(mainContext context.Context, brandID string, limit, page int) ([]models.Product, error) {
+func (useCase *ProductUseCase) GetProductByBrandID(mainContext context.Context, brandID string, limit, page int) ([]models.Product, error) {
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
