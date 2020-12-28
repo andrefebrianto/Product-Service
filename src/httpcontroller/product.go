@@ -11,7 +11,7 @@ import (
 
 // ProductHandler ...
 type ProductHandler struct {
-	useCase usecase.ProductUseCase
+	UseCase usecase.ProductUseCase
 }
 
 // GetProductByID ...
@@ -19,7 +19,7 @@ func (handler *ProductHandler) GetProductByID(context echo.Context) error {
 	id := context.QueryParam("id")
 	ctx := context.Request().Context()
 
-	product, err := handler.useCase.GetProductByID(ctx, id)
+	product, err := handler.UseCase.GetProductByID(ctx, id)
 
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
@@ -39,7 +39,7 @@ func (handler *ProductHandler) GetProducts(context echo.Context) error {
 
 	ctx := context.Request().Context()
 
-	products, err := handler.useCase.GetProducts(ctx, limit, page)
+	products, err := handler.UseCase.GetProducts(ctx, limit, page)
 
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
@@ -68,7 +68,7 @@ func (handler *ProductHandler) UpdateProductStock(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	product, err := handler.useCase.UpdateProductStock(ctx, id, payload["stock"].(int))
+	product, err := handler.UseCase.UpdateProductStock(ctx, id, payload["stock"].(int))
 
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
@@ -91,7 +91,7 @@ func (handler *ProductHandler) UpdateProduct(context echo.Context) error {
 
 	ctx := context.Request().Context()
 
-	updatedProduct, err := handler.useCase.UpdateProduct(ctx, product)
+	updatedProduct, err := handler.UseCase.UpdateProduct(ctx, product)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -109,7 +109,7 @@ func (handler *ProductHandler) AddProduct(context echo.Context) error {
 
 	ctx := context.Request().Context()
 
-	createdProduct, err := handler.useCase.CreateProduct(ctx, product)
+	createdProduct, err := handler.UseCase.CreateProduct(ctx, product)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -123,7 +123,7 @@ func (handler *ProductHandler) DeleteProduct(context echo.Context) error {
 
 	ctx := context.Request().Context()
 
-	err := handler.useCase.DeleteProduct(ctx, id)
+	err := handler.UseCase.DeleteProduct(ctx, id)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 	}

@@ -14,8 +14,12 @@ type BrandUseCase struct {
 	contextTimeout    time.Duration
 }
 
-func CreateBrandUseCase(command brandrepo.BrandCommands, query brandrepo.BrandQueries) *BrandUseCase {
-	return &BrandUseCase{commandRepository: command, queryRepository: query, contextTimeout: 2}
+func CreateBrandUseCase(command brandrepo.BrandCommands, query brandrepo.BrandQueries, timeout time.Duration) BrandUseCase {
+	return BrandUseCase{
+		commandRepository: command,
+		queryRepository:   query,
+		contextTimeout:    timeout,
+	}
 }
 
 func (useCase *BrandUseCase) CreateBrand(mainContext context.Context, brand *models.Brand) (*models.Brand, error) {

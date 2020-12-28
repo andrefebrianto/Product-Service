@@ -9,17 +9,17 @@ import (
 )
 
 //BrandQuery ...
-type BrandQuery struct {
+type brandQuery struct {
 	dbConnection *pg.DB
 }
 
 //CreateRepository ...
-func CreateRepository(connection *pg.DB) *BrandQuery {
-	return &BrandQuery{connection}
+func CreateRepository(connection *pg.DB) brandQuery {
+	return brandQuery{connection}
 }
 
 //GetBrands ...
-func (query BrandQuery) GetBrands(context context.Context, limit, page int) ([]models.Brand, error) {
+func (query brandQuery) GetBrands(context context.Context, limit, page int) ([]models.Brand, error) {
 	var brands []models.Brand
 	skip := (page - 1) * limit
 
@@ -31,7 +31,7 @@ func (query BrandQuery) GetBrands(context context.Context, limit, page int) ([]m
 }
 
 //GetBrandByID ...
-func (query BrandQuery) GetBrandByID(context context.Context, id string) (*models.Brand, error) {
+func (query brandQuery) GetBrandByID(context context.Context, id string) (*models.Brand, error) {
 	brand := new(models.Brand)
 
 	err := query.dbConnection.ModelContext(context, brand).Where("ID", id).Order("CreatedAt DESC").Select()

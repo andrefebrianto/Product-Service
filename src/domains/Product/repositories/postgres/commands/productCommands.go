@@ -9,17 +9,17 @@ import (
 )
 
 //ProductCommand ...
-type ProductCommand struct {
+type productCommand struct {
 	dbConnection *pg.DB
 }
 
 //CreateRepository ...
-func CreateRepository(connection *pg.DB) *ProductCommand {
-	return &ProductCommand{connection}
+func CreateRepository(connection *pg.DB) productCommand {
+	return productCommand{connection}
 }
 
 //CreateProduct ...
-func (command ProductCommand) CreateProduct(context context.Context, product *models.Product) (*models.Product, error) {
+func (command productCommand) CreateProduct(context context.Context, product *models.Product) (*models.Product, error) {
 	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		_, err := dbTransaction.ModelContext(context, product).Insert()
 		if err != nil {
@@ -37,7 +37,7 @@ func (command ProductCommand) CreateProduct(context context.Context, product *mo
 }
 
 //UpdateProduct ...
-func (command ProductCommand) UpdateProduct(context context.Context, product *models.Product) (*models.Product, error) {
+func (command productCommand) UpdateProduct(context context.Context, product *models.Product) (*models.Product, error) {
 	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		_, err := dbTransaction.ModelContext(context, product).WherePK().Update()
 		if err != nil {
@@ -55,7 +55,7 @@ func (command ProductCommand) UpdateProduct(context context.Context, product *mo
 }
 
 //UpdateProductStock ...
-func (command ProductCommand) UpdateProductStock(context context.Context, product *models.Product) (*models.Product, error) {
+func (command productCommand) UpdateProductStock(context context.Context, product *models.Product) (*models.Product, error) {
 	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		_, err := dbTransaction.ModelContext(context, product).Column("Stock", "UpdatedAt").WherePK().Update()
 		if err != nil {
@@ -73,7 +73,7 @@ func (command ProductCommand) UpdateProductStock(context context.Context, produc
 }
 
 //DeleteProduct ...
-func (command ProductCommand) DeleteProduct(context context.Context, id string) error {
+func (command productCommand) DeleteProduct(context context.Context, id string) error {
 	product := &models.Product{
 		ID: id,
 	}

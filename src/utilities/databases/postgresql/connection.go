@@ -9,7 +9,7 @@ import (
 
 type dbConnection struct {
 	id string
-	db interface{}
+	db *pg.DB
 }
 
 //ConnectionPool ...
@@ -39,7 +39,7 @@ func InitConnection(configs []map[string]interface{}) {
 }
 
 //GetConnection ...
-func GetConnection(id string) (interface{}, error) {
+func GetConnection(id string) (*pg.DB, error) {
 	fmt.Println(connectionPools)
 	for _, connection := range connectionPools.connections {
 		if connection.id == id {

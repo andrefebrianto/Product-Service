@@ -3,7 +3,12 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
+	brandRepoCommand "github.com/andrefebrianto/rest-api/src/domains/Brand/repositories/postgres/commands"
+	brandRepoQuery "github.com/andrefebrianto/rest-api/src/domains/Brand/repositories/postgres/queries"
+	brandUseCase "github.com/andrefebrianto/rest-api/src/domains/Brand/usecases"
+	"github.com/andrefebrianto/rest-api/src/httprouter"
 	"github.com/andrefebrianto/rest-api/src/utilities/databases/postgresql"
 
 	"github.com/labstack/echo/v4"
@@ -40,6 +45,7 @@ func loadConfig() *viper.Viper {
 
 func main() {
 	config := loadConfig()
+	contextTimeout := time.Duration(config.GetInt("context.timeout")) * time.Second
 
 	// Echo instance
 	httpServer := echo.New()
@@ -52,15 +58,14 @@ func main() {
 	// Routes
 	httpServer.GET("/", healthCheck)
 
+	//Initialize PostgreSQL database
 	var postgreSQLConfigs []map[string]interface{}
 	err := config.UnmarshalKey("postgreSQL", &postgreSQLConfigs)
 	if err != nil {
 		panic(err)
 	}
 
-	//Initialize database
 	postgresql.InitConnection(postgreSQLConfigs)
-	// connection, err := postgresql.GetConnection("transaction-db")
 
 	var mongoDBConfigs []map[string]interface{}
 	err = config.UnmarshalKey("mongoDB", &mongoDBConfigs)
@@ -68,8 +73,16 @@ func main() {
 		panic(err)
 	}
 
-	brandRouters :=
+	connection, err := postgresql.GetConnection("product-db")
+	//Create Repositories
+	brandCommand := brandRepoCommand.CreateRepository(connection)
+	brandQuery := brandRepoQuery.CreateRepository(connection)
 
-		// Start server
-		httpServer.Logger.Fatal(httpServer.Start(config.GetString("server.port")))
+	//Create Use Cases
+	brandUC := brandUseCase.CreateBrandUseCase(brandCommand, brandQuery, contextTimeout)
+
+	httprouter.CreateBrandHttpRouter(httpServer, brandUC)
+
+	// Start server
+	httpServer.Logger.Fatal(httpServer.Start(config.GetString("server.port")))
 }

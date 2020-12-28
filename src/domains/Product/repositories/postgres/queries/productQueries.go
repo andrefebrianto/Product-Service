@@ -8,18 +8,17 @@ import (
 	"github.com/go-pg/pg/v10"
 )
 
-//ProductQuery ...
-type ProductQuery struct {
+type productQuery struct {
 	dbConnection *pg.DB
 }
 
 //CreateRepository ...
-func CreateRepository(connection *pg.DB) *ProductQuery {
-	return &ProductQuery{connection}
+func CreateRepository(connection *pg.DB) productQuery {
+	return productQuery{connection}
 }
 
 //GetProducts ...
-func (query ProductQuery) GetProducts(context context.Context, limit, page int) ([]models.Product, error) {
+func (query productQuery) GetProducts(context context.Context, limit, page int) ([]models.Product, error) {
 	var products []models.Product
 	skip := (page - 1) * limit
 
@@ -31,7 +30,7 @@ func (query ProductQuery) GetProducts(context context.Context, limit, page int) 
 }
 
 //GetProductsByBrandID ...
-func (query ProductQuery) GetProductsByBrandID(context context.Context, limit, page int, brandID string) ([]models.Product, error) {
+func (query productQuery) GetProductsByBrandID(context context.Context, limit, page int, brandID string) ([]models.Product, error) {
 	var products []models.Product
 	skip := (page - 1) * limit
 
@@ -43,7 +42,7 @@ func (query ProductQuery) GetProductsByBrandID(context context.Context, limit, p
 }
 
 //GetProductByID ...
-func (query ProductQuery) GetProductByID(context context.Context, id string) (*models.Product, error) {
+func (query productQuery) GetProductByID(context context.Context, id string) (*models.Product, error) {
 	product := new(models.Product)
 
 	err := query.dbConnection.ModelContext(context, product).Where("ID", id).Order("CreatedAt DESC").Select()

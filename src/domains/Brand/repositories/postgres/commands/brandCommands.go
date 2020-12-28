@@ -9,17 +9,17 @@ import (
 )
 
 //BrandCommand ...
-type BrandCommand struct {
+type brandCommand struct {
 	dbConnection *pg.DB
 }
 
 //CreateRepository ...
-func CreateRepository(connection *pg.DB) *BrandCommand {
-	return &BrandCommand{connection}
+func CreateRepository(connection *pg.DB) brandCommand {
+	return brandCommand{connection}
 }
 
 //CreateBrand ...
-func (command BrandCommand) CreateBrand(context context.Context, brand *models.Brand) (*models.Brand, error) {
+func (command brandCommand) CreateBrand(context context.Context, brand *models.Brand) (*models.Brand, error) {
 	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		_, err := dbTransaction.ModelContext(context, brand).Insert()
 		if err != nil {
@@ -37,7 +37,7 @@ func (command BrandCommand) CreateBrand(context context.Context, brand *models.B
 }
 
 //UpdateBrand ...
-func (command BrandCommand) UpdateBrand(context context.Context, brand *models.Brand) (*models.Brand, error) {
+func (command brandCommand) UpdateBrand(context context.Context, brand *models.Brand) (*models.Brand, error) {
 	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		_, err := dbTransaction.ModelContext(context, brand).WherePK().Update()
 		if err != nil {
@@ -55,7 +55,7 @@ func (command BrandCommand) UpdateBrand(context context.Context, brand *models.B
 }
 
 //DeleteBrand ...
-func (command BrandCommand) DeleteBrand(context context.Context, id string) error {
+func (command brandCommand) DeleteBrand(context context.Context, id string) error {
 	brand := &models.Brand{
 		ID: id,
 	}

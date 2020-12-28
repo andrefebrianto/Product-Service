@@ -16,7 +16,7 @@ type ResponseError struct {
 
 // BrandHandler ...
 type BrandHandler struct {
-	useCase brandusecase.BrandUseCase
+	UseCase brandusecase.BrandUseCase
 }
 
 // GetBrandByID ...
@@ -24,7 +24,7 @@ func (handler *BrandHandler) GetBrandByID(context echo.Context) error {
 	id := context.QueryParam("id")
 	ctx := context.Request().Context()
 
-	brand, err := handler.useCase.GetBrandByID(ctx, id)
+	brand, err := handler.UseCase.GetBrandByID(ctx, id)
 
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
@@ -44,7 +44,7 @@ func (handler *BrandHandler) GetBrands(context echo.Context) error {
 
 	ctx := context.Request().Context()
 
-	brands, err := handler.useCase.GetBrands(ctx, limit, page)
+	brands, err := handler.UseCase.GetBrands(ctx, limit, page)
 
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
@@ -67,7 +67,7 @@ func (handler *BrandHandler) AddBrand(context echo.Context) error {
 
 	ctx := context.Request().Context()
 
-	createdBrand, err := handler.useCase.CreateBrand(ctx, &brand)
+	createdBrand, err := handler.UseCase.CreateBrand(ctx, &brand)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -81,7 +81,7 @@ func (handler *BrandHandler) DeleteBrand(context echo.Context) error {
 
 	ctx := context.Request().Context()
 
-	err := handler.useCase.DeleteBrand(ctx, id)
+	err := handler.UseCase.DeleteBrand(ctx, id)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -98,7 +98,7 @@ func (handler *BrandHandler) UpdateBrand(context echo.Context) error {
 
 	ctx := context.Request().Context()
 
-	updatedBrand, err := handler.useCase.UpdateBrand(ctx, &brand)
+	updatedBrand, err := handler.UseCase.UpdateBrand(ctx, &brand)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}

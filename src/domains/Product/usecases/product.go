@@ -14,8 +14,12 @@ type ProductUseCase struct {
 	contextTimeout    time.Duration
 }
 
-func CreateProductUseCase() *ProductUseCase {
-	return &ProductUseCase{}
+func CreateProductUseCase(command brandrepo.ProductCommand, query brandrepo.ProductQueries, timeout time.Duration) ProductUseCase {
+	return ProductUseCase{
+		commandRepository: command,
+		queryRepository:   query,
+		contextTimeout:    timeout,
+	}
 }
 
 func (useCase *ProductUseCase) CreateProduct(mainContext context.Context, product *models.Product) (*models.Product, error) {
