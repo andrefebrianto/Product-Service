@@ -22,32 +22,49 @@ func (query productQuery) GetProducts(context context.Context, limit, page int) 
 	var products []models.Product
 	skip := (page - 1) * limit
 
-	err := query.dbConnection.ModelContext(context, products).Order("CreatedAt DESC").Offset(skip).Limit(limit).Select()
-	if err == nil {
-		return products, nil
+	err := query.dbConnection.ModelContext(context, &products).Order("created_at DESC").Offset(skip).Limit(limit).Select()
+
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New("Product(s) not found")
+
+	if len(products) == 0 {
+		return nil, errors.New("Product(s) not found")
+	}
+
+	return products, nil
 }
 
 //GetProductsByBrandID ...
-func (query productQuery) GetProductsByBrandID(context context.Context, limit, page int, brandID string) ([]models.Product, error) {
+func (query productQuery) GetProductsByBrandID(context context.Context, brandID string, limit, page int) ([]models.Product, error) {
 	var products []models.Product
 	skip := (page - 1) * limit
 
-	err := query.dbConnection.ModelContext(context, products).Where("BrandID", brandID).Order("CreatedAt DESC").Offset(skip).Limit(limit).Select()
-	if err == nil {
-		return products, nil
+	err := query.dbConnection.ModelContext(context, &products).Where("BrandID", brandID).Order("created_at DESC").Offset(skip).Limit(limit).Select()
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New("Product(s) not found")
+
+	if len(products) == 0 {
+		return nil, errors.New("Product(s) not found")
+	}
+
+	return products, nil
 }
 
 //GetProductByID ...
 func (query productQuery) GetProductByID(context context.Context, id string) (*models.Product, error) {
 	product := new(models.Product)
 
-	err := query.dbConnection.ModelContext(context, product).Where("ID", id).Order("CreatedAt DESC").Select()
-	if err == nil {
-		return product, nil
+	err := query.dbConnection.ModelContext(context, product).Where("id = ?", id).Select()
+
+	if err.Error() == "pg: no rows in result set" {
+		return nil, errors.New("Product not found")
 	}
-	return nil, errors.New("Product not found")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return product, nil
 }

@@ -48,7 +48,7 @@ func (useCase *ProductUseCase) UpdateProductStock(mainContext context.Context, i
 	contextWithTimeout, cancel := context.WithTimeout(mainContext, useCase.contextTimeout)
 	defer cancel()
 
-	product := &models.Product{ID: id, Stock: stock}
+	product := &models.Product{ID: id, Stock: stock, UpdatedAt: time.Now()}
 
 	updatedProduct, err := useCase.commandRepository.UpdateProductStock(contextWithTimeout, product)
 	if err != nil {

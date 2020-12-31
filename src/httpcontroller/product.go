@@ -1,12 +1,16 @@
 package httpcontroller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/andrefebrianto/rest-api/src/domains/Product/usecases"
 	usecase "github.com/andrefebrianto/rest-api/src/domains/Product/usecases"
 	"github.com/andrefebrianto/rest-api/src/models"
-	"github.com/labstack/echo"
+	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
 // ProductHandler ...
@@ -14,19 +18,25 @@ type ProductHandler struct {
 	UseCase usecase.ProductUseCase
 }
 
+func CreateProductHandler(e *echo.Echo, usecase usecases.ProductUseCase) {
+	handler := &ProductHandler{UseCase: usecase}
+
+	e.POST("/api/products", handler.AddProduct)
+	e.DELETE("/api/products/:id", handler.DeleteProduct)
+	e.PATCH("api/products/:id/stocks", handler.UpdateProductStock)
+	e.GET("/api/products", handler.GetProducts)
+	e.GET("/api/products/:id", handler.GetProductByID)
+}
+
 // GetProductByID ...
 func (handler *ProductHandler) GetProductByID(context echo.Context) error {
-	id := context.QueryParam("id")
+	id := context.Param("id")
 	ctx := context.Request().Context()
 
 	product, err := handler.UseCase.GetProductByID(ctx, id)
 
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
-	}
-
-	if product == nil {
-		return context.JSON(http.StatusNotFound, ResponseError{Message: "Product not found"})
 	}
 
 	return context.JSON(http.StatusOK, product)
@@ -60,7 +70,6 @@ func (handler *ProductHandler) PurchaseProduct(context echo.Context) error {
 
 // RestockProduct ...
 func (handler *ProductHandler) UpdateProductStock(context echo.Context) error {
-	id := context.QueryParam("id")
 	ctx := context.Request().Context()
 	payload := map[string]interface{}{}
 
@@ -68,7 +77,7 @@ func (handler *ProductHandler) UpdateProductStock(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	product, err := handler.UseCase.UpdateProductStock(ctx, id, payload["stock"].(int))
+	product, err := handler.UseCase.UpdateProductStock(ctx, payload["id"].(string), int(payload["stock"].(float64)))
 
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
@@ -83,15 +92,16 @@ func (handler *ProductHandler) UpdateProductStock(context echo.Context) error {
 
 // UpdateProduct ...
 func (handler *ProductHandler) UpdateProduct(context echo.Context) error {
-	var product *models.Product
-	err := context.Bind(product)
+	var product models.Product
+	err := context.Bind(&product)
 	if err != nil {
 		return context.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
 
 	ctx := context.Request().Context()
+	product.UpdatedAt = time.Now()
 
-	updatedProduct, err := handler.UseCase.UpdateProduct(ctx, product)
+	updatedProduct, err := handler.UseCase.UpdateProduct(ctx, &product)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -101,15 +111,24 @@ func (handler *ProductHandler) UpdateProduct(context echo.Context) error {
 
 // AddProduct ...
 func (handler *ProductHandler) AddProduct(context echo.Context) error {
-	var product *models.Product
-	err := context.Bind(product)
+	var product models.Product
+	err := context.Bind(&product)
 	if err != nil {
 		return context.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
 
 	ctx := context.Request().Context()
+	generatedId, err := uuid.NewRandom()
 
-	createdProduct, err := handler.UseCase.CreateProduct(ctx, product)
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	product.ID = generatedId.String()
+	product.CreatedAt = time.Now()
+	product.UpdatedAt = time.Now()
+	fmt.Println(product)
+	createdProduct, err := handler.UseCase.CreateProduct(ctx, &product)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}

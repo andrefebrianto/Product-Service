@@ -17,6 +17,6 @@ type ProductCommand interface {
 // ProductQueries represent query function for product domain
 type ProductQueries interface {
 	GetProducts(context context.Context, limit, page int) ([]models.Product, error)
-	GetProductByID(context context.Context, id string) (*models.Product, error)
 	GetProductsByBrandID(context context.Context, brandID string, limit, page int) ([]models.Product, error)
+	GetProductByID(context context.Context, id string) (*models.Product, error)
 }

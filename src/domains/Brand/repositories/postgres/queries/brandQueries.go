@@ -23,20 +23,30 @@ func (query brandQuery) GetBrands(context context.Context, limit, page int) ([]m
 	var brands []models.Brand
 	skip := (page - 1) * limit
 
-	err := query.dbConnection.ModelContext(context, brands).Order("CreatedAt DESC").Offset(skip).Limit(limit).Select()
-	if err == nil {
-		return brands, nil
+	err := query.dbConnection.ModelContext(context, &brands).Order("created_at DESC").Offset(skip).Limit(limit).Select()
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New("Brand(s) not found")
+
+	if len(brands) == 0 {
+		return nil, errors.New("Brand(s) not found")
+	}
+
+	return brands, nil
 }
 
 //GetBrandByID ...
 func (query brandQuery) GetBrandByID(context context.Context, id string) (*models.Brand, error) {
 	brand := new(models.Brand)
 
-	err := query.dbConnection.ModelContext(context, brand).Where("ID", id).Order("CreatedAt DESC").Select()
-	if err == nil {
-		return brand, nil
+	err := query.dbConnection.ModelContext(context, brand).Where("id = ?", id).Select()
+	if err.Error() == "pg: no rows in result set" {
+		return nil, errors.New("Brand not found")
 	}
-	return nil, errors.New("Brand not found")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return brand, nil
 }

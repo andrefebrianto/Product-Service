@@ -2,7 +2,7 @@ package commands
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/andrefebrianto/rest-api/src/models"
 	"github.com/go-pg/pg/v10"
@@ -29,11 +29,11 @@ func (command brandCommand) CreateBrand(context context.Context, brand *models.B
 		return err
 	})
 
-	if err == nil {
-		return brand, nil
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, errors.New("Failed to create produt")
+	return brand, nil
 }
 
 //UpdateBrand ...
@@ -47,11 +47,11 @@ func (command brandCommand) UpdateBrand(context context.Context, brand *models.B
 		return err
 	})
 
-	if err == nil {
-		return brand, nil
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, errors.New("Failed to update produt")
+	return brand, nil
 }
 
 //DeleteBrand ...
@@ -59,8 +59,9 @@ func (command brandCommand) DeleteBrand(context context.Context, id string) erro
 	brand := &models.Brand{
 		ID: id,
 	}
+	fmt.Println(brand)
 	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
-		_, err := dbTransaction.ModelContext(context, brand).WherePK().Update()
+		_, err := dbTransaction.ModelContext(context, brand).WherePK().Delete()
 		if err != nil {
 			return err
 		}
@@ -68,9 +69,9 @@ func (command brandCommand) DeleteBrand(context context.Context, id string) erro
 		return err
 	})
 
-	if err == nil {
-		return nil
+	if err != nil {
+		return err
 	}
 
-	return errors.New("Failed to delete produt")
+	return nil
 }

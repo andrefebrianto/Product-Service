@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/go-pg/pg/v10"
 )
@@ -28,19 +27,18 @@ func InitConnection(configs []map[string]interface{}) {
 		id := config["id"].(string)
 		newConnection.id = id
 		uri := config["uri"].(string)
-		newConnection.db = pg.Connect(&pg.Options{
-			Addr: uri,
-			User: "postgres",
-		})
+		opt, err := pg.ParseURL(uri)
+		if err != nil {
+			panic(err)
+		}
+		newConnection.db = pg.Connect(opt)
 
 		connectionPools.connections = append(connectionPools.connections, newConnection)
 	}
-	fmt.Println(connectionPools)
 }
 
 //GetConnection ...
 func GetConnection(id string) (*pg.DB, error) {
-	fmt.Println(connectionPools)
 	for _, connection := range connectionPools.connections {
 		if connection.id == id {
 			return connection.db, nil

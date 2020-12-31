@@ -8,7 +8,10 @@ import (
 	brandRepoCommand "github.com/andrefebrianto/rest-api/src/domains/Brand/repositories/postgres/commands"
 	brandRepoQuery "github.com/andrefebrianto/rest-api/src/domains/Brand/repositories/postgres/queries"
 	brandUseCase "github.com/andrefebrianto/rest-api/src/domains/Brand/usecases"
-	"github.com/andrefebrianto/rest-api/src/httprouter"
+	productRepoCommand "github.com/andrefebrianto/rest-api/src/domains/Product/repositories/postgres/commands"
+	productRepoQuery "github.com/andrefebrianto/rest-api/src/domains/Product/repositories/postgres/queries"
+	productUseCase "github.com/andrefebrianto/rest-api/src/domains/Product/usecases"
+	controller "github.com/andrefebrianto/rest-api/src/httpcontroller"
 	"github.com/andrefebrianto/rest-api/src/utilities/databases/postgresql"
 
 	"github.com/labstack/echo/v4"
@@ -78,10 +81,16 @@ func main() {
 	brandCommand := brandRepoCommand.CreateRepository(connection)
 	brandQuery := brandRepoQuery.CreateRepository(connection)
 
+	productCommand := productRepoCommand.CreateRepository(connection)
+	productQuery := productRepoQuery.CreateRepository(connection)
+
 	//Create Use Cases
 	brandUC := brandUseCase.CreateBrandUseCase(brandCommand, brandQuery, contextTimeout)
 
-	httprouter.CreateBrandHttpRouter(httpServer, brandUC)
+	productUC := productUseCase.CreateProductUseCase(productCommand, productQuery, contextTimeout)
+
+	controller.CreateBrandHandler(httpServer, brandUC)
+	controller.CreateProductHandler(httpServer, productUC)
 
 	// Start server
 	httpServer.Logger.Fatal(httpServer.Start(config.GetString("server.port")))

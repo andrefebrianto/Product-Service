@@ -3,10 +3,13 @@ package httpcontroller
 import (
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/andrefebrianto/rest-api/src/domains/Brand/usecases"
 	brandusecase "github.com/andrefebrianto/rest-api/src/domains/Brand/usecases"
 	"github.com/andrefebrianto/rest-api/src/models"
-	"github.com/labstack/echo"
+	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
 // ResponseError represent the reseponse error struct
@@ -19,9 +22,19 @@ type BrandHandler struct {
 	UseCase brandusecase.BrandUseCase
 }
 
+func CreateBrandHandler(e *echo.Echo, usecase usecases.BrandUseCase) {
+	handler := &BrandHandler{UseCase: usecase}
+
+	e.POST("/api/brands", handler.AddBrand)
+	e.DELETE("/api/brands/:id", handler.DeleteBrand)
+	e.PUT("/api/brands/:id", handler.UpdateBrand)
+	e.GET("/api/brands", handler.GetBrands)
+	e.GET("/api/brands/:id", handler.GetBrandByID)
+}
+
 // GetBrandByID ...
 func (handler *BrandHandler) GetBrandByID(context echo.Context) error {
-	id := context.QueryParam("id")
+	id := context.Param("id")
 	ctx := context.Request().Context()
 
 	brand, err := handler.UseCase.GetBrandByID(ctx, id)
@@ -60,12 +73,23 @@ func (handler *BrandHandler) GetBrands(context echo.Context) error {
 // AddBrand ...
 func (handler *BrandHandler) AddBrand(context echo.Context) error {
 	var brand models.Brand
-	err := context.Bind(brand)
+	err := context.Bind(&brand)
+
 	if err != nil {
 		return context.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
 
 	ctx := context.Request().Context()
+
+	generatedId, err := uuid.NewRandom()
+
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	brand.ID = generatedId.String()
+	brand.CreatedAt = time.Now()
+	brand.UpdatedAt = time.Now()
 
 	createdBrand, err := handler.UseCase.CreateBrand(ctx, &brand)
 	if err != nil {
@@ -91,12 +115,13 @@ func (handler *BrandHandler) DeleteBrand(context echo.Context) error {
 
 func (handler *BrandHandler) UpdateBrand(context echo.Context) error {
 	var brand models.Brand
-	err := context.Bind(brand)
+	err := context.Bind(&brand)
 	if err != nil {
 		return context.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
 
 	ctx := context.Request().Context()
+	brand.UpdatedAt = time.Now()
 
 	updatedBrand, err := handler.UseCase.UpdateBrand(ctx, &brand)
 	if err != nil {

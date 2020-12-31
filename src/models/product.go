@@ -7,19 +7,20 @@ import (
 
 // Product datastructure for Poduct domain
 type Product struct {
-	ID          string
-	Name        string
-	Price       int
-	Brand       Brand
-	Description string
-	Stock       int
-	Sold        int
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          string    `pg:"id,type:uuid,pk"`
+	Name        string    `pg:"name,notnull"`
+	Price       int       `pg:"price,notnull"`
+	Brand       *Brand    `pg:"rel:has-one,notnull,join_fk:brand_id"`
+	Description string    `pg:"description"`
+	Stock       int       `pg:"stock,notnull"`
+	Sold        int       `pg:"sold,notnull"`
+	CreatedAt   time.Time `pg:"created_at,notnull,default:now()"`
+	UpdatedAt   time.Time `pg:"updated_at,notnull,default:now()"`
+	DeletedAt   time.Time `pg:"deleted_at,soft_delete"`
 }
 
-// BuyStock will subtract product stock and add product sold
-func (product *Product) BuyStock(amount int) (int, error) {
+// BuyProduct will subtract product stock and add product sold
+func (product *Product) BuyProduct(amount int) (int, error) {
 	if product.Stock < amount {
 		return 0, errors.New("Insufficient stock")
 	}
