@@ -38,7 +38,7 @@ func (command productCommand) CreateProduct(context context.Context, product *mo
 //UpdateProduct ...
 func (command productCommand) UpdateProduct(context context.Context, product *models.Product) (*models.Product, error) {
 	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
-		_, err := dbTransaction.ModelContext(context, product).WherePK().Update()
+		_, err := dbTransaction.ModelContext(context, product).Column("name", "price", "brand_id", "description", "stock", "sold", "updated_at").WherePK().Update()
 		if err != nil {
 			return err
 		}

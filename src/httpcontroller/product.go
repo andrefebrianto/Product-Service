@@ -31,6 +31,7 @@ func CreateProductHandler(e *echo.Echo, usecase usecases.ProductUseCase) {
 
 	e.POST("/api/products", handler.AddProduct)
 	e.DELETE("/api/products/:id", handler.DeleteProduct)
+	e.PUT("/api/products/:id", handler.UpdateProduct)
 	e.PATCH("api/products/:id/stocks", handler.UpdateProductStock)
 	e.GET("/api/products", handler.GetProducts)
 	e.GET("/api/products/:id", handler.GetProductByID)
@@ -47,7 +48,7 @@ func (handler *ProductHandler) GetProductByID(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return context.JSON(http.StatusOK, product)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Product retrieved", Data: product})
 }
 
 // GetProducts ...
@@ -67,7 +68,7 @@ func (handler *ProductHandler) GetProducts(context echo.Context) error {
 		return context.JSON(http.StatusNotFound, ResponseError{Message: "Product(s) not found"})
 	}
 
-	return context.JSON(http.StatusOK, products)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Product(s) retrieved", Data: products})
 }
 
 // PurchaseProduct ...
@@ -95,7 +96,7 @@ func (handler *ProductHandler) UpdateProductStock(context echo.Context) error {
 		return context.JSON(http.StatusNotFound, ResponseError{Message: "Product not found"})
 	}
 
-	return context.JSON(http.StatusOK, ResponseError{Message: "Stock updated"})
+	return context.JSON(http.StatusOK, ResponseError{Message: "Stock updated", Data: product})
 }
 
 // UpdateProduct ...
@@ -114,7 +115,7 @@ func (handler *ProductHandler) UpdateProduct(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return context.JSON(http.StatusOK, updatedProduct)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Product updated", Data: updatedProduct})
 }
 
 // AddProduct ...
@@ -158,5 +159,5 @@ func (handler *ProductHandler) DeleteProduct(context echo.Context) error {
 		context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return context.JSON(http.StatusOK, nil)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Product deleted"})
 }
