@@ -58,11 +58,9 @@ func (query productQuery) GetProductByID(context context.Context, id string) (*m
 
 	err := query.dbConnection.ModelContext(context, product).Where("id = ?", id).Select()
 
-	if err.Error() == "pg: no rows in result set" {
+	if err != nil && err.Error() == "pg: no rows in result set" {
 		return nil, errors.New("Product not found")
-	}
-
-	if err != nil {
+	} else if err != nil {
 		return nil, err
 	}
 

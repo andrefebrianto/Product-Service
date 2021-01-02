@@ -10,10 +10,11 @@ type Product struct {
 	ID          string    `pg:"id,type:uuid,pk"`
 	Name        string    `pg:"name,notnull"`
 	Price       int       `pg:"price,notnull"`
-	Brand       *Brand    `pg:"rel:has-one,notnull,join_fk:brand_id"`
+	BrandId     string    `pg:"brand_id,notnull"`
+	Brand       *Brand    `pg:"rel:has-one"`
 	Description string    `pg:"description"`
-	Stock       int       `pg:"stock,notnull"`
-	Sold        int       `pg:"sold,notnull"`
+	Stock       int       `pg:"stock,use_zero"`
+	Sold        int       `pg:"sold,use_zero"`
 	CreatedAt   time.Time `pg:"created_at,notnull,default:now()"`
 	UpdatedAt   time.Time `pg:"updated_at,notnull,default:now()"`
 	DeletedAt   time.Time `pg:"deleted_at,soft_delete"`

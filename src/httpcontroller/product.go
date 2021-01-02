@@ -1,7 +1,6 @@
 package httpcontroller
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,6 +15,15 @@ import (
 // ProductHandler ...
 type ProductHandler struct {
 	UseCase usecase.ProductUseCase
+}
+
+type productPayloadBuffer struct {
+	Name        string
+	Price       int
+	BrandId     string
+	Description string
+	Stock       int
+	Sold        int
 }
 
 func CreateProductHandler(e *echo.Echo, usecase usecases.ProductUseCase) {
@@ -87,7 +95,7 @@ func (handler *ProductHandler) UpdateProductStock(context echo.Context) error {
 		return context.JSON(http.StatusNotFound, ResponseError{Message: "Product not found"})
 	}
 
-	return context.JSON(http.StatusOK, nil)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Stock updated"})
 }
 
 // UpdateProduct ...
@@ -95,7 +103,7 @@ func (handler *ProductHandler) UpdateProduct(context echo.Context) error {
 	var product models.Product
 	err := context.Bind(&product)
 	if err != nil {
-		return context.JSON(http.StatusUnprocessableEntity, err.Error())
+		return context.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
 	}
 
 	ctx := context.Request().Context()
@@ -103,7 +111,7 @@ func (handler *ProductHandler) UpdateProduct(context echo.Context) error {
 
 	updatedProduct, err := handler.UseCase.UpdateProduct(ctx, &product)
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
 	return context.JSON(http.StatusOK, updatedProduct)
@@ -111,29 +119,32 @@ func (handler *ProductHandler) UpdateProduct(context echo.Context) error {
 
 // AddProduct ...
 func (handler *ProductHandler) AddProduct(context echo.Context) error {
+	// var buffer productPayloadBuffer
 	var product models.Product
 	err := context.Bind(&product)
 	if err != nil {
-		return context.JSON(http.StatusUnprocessableEntity, err.Error())
+		return context.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
 	}
 
-	ctx := context.Request().Context()
 	generatedId, err := uuid.NewRandom()
-
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
 	product.ID = generatedId.String()
 	product.CreatedAt = time.Now()
 	product.UpdatedAt = time.Now()
-	fmt.Println(product)
+
+	ctx := context.Request().Context()
+
 	createdProduct, err := handler.UseCase.CreateProduct(ctx, &product)
-	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+	if err != nil && err.Error() == "ERROR #23503 insert or update on table \"products\" violates foreign key constraint \"products_brand_id_fkey\"" {
+		return context.JSON(http.StatusForbidden, ResponseError{Message: "Brand not found"})
+	} else if err != nil {
+		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return context.JSON(http.StatusOK, createdProduct)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Product created", Data: createdProduct})
 }
 
 // DeleteProduct ...
@@ -144,7 +155,7 @@ func (handler *ProductHandler) DeleteProduct(context echo.Context) error {
 
 	err := handler.UseCase.DeleteProduct(ctx, id)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
 	return context.JSON(http.StatusOK, nil)

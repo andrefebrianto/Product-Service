@@ -15,6 +15,7 @@ import (
 // ResponseError represent the reseponse error struct
 type ResponseError struct {
 	Message string `json:"message"`
+	Data    interface{}
 }
 
 // BrandHandler ...
@@ -38,16 +39,11 @@ func (handler *BrandHandler) GetBrandByID(context echo.Context) error {
 	ctx := context.Request().Context()
 
 	brand, err := handler.UseCase.GetBrandByID(ctx, id)
-
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	if brand == nil {
-		return context.JSON(http.StatusNotFound, ResponseError{Message: "Brand not found"})
-	}
-
-	return context.JSON(http.StatusOK, brand)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Brand retrieved", Data: brand})
 }
 
 // GetBrands ...
@@ -67,7 +63,7 @@ func (handler *BrandHandler) GetBrands(context echo.Context) error {
 		return context.JSON(http.StatusNotFound, ResponseError{Message: "Brand(s) not found"})
 	}
 
-	return context.JSON(http.StatusOK, brands)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Brand(s) retrieved", Data: brands})
 }
 
 // AddBrand ...
@@ -76,7 +72,7 @@ func (handler *BrandHandler) AddBrand(context echo.Context) error {
 	err := context.Bind(&brand)
 
 	if err != nil {
-		return context.JSON(http.StatusUnprocessableEntity, err.Error())
+		return context.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
 	}
 
 	ctx := context.Request().Context()
@@ -84,7 +80,7 @@ func (handler *BrandHandler) AddBrand(context echo.Context) error {
 	generatedId, err := uuid.NewRandom()
 
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
 	brand.ID = generatedId.String()
@@ -93,10 +89,10 @@ func (handler *BrandHandler) AddBrand(context echo.Context) error {
 
 	createdBrand, err := handler.UseCase.CreateBrand(ctx, &brand)
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return context.JSON(http.StatusCreated, createdBrand)
+	return context.JSON(http.StatusCreated, ResponseError{Message: "Brand created", Data: createdBrand})
 }
 
 // DeleteBrand ...
@@ -107,17 +103,17 @@ func (handler *BrandHandler) DeleteBrand(context echo.Context) error {
 
 	err := handler.UseCase.DeleteBrand(ctx, id)
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return context.JSON(http.StatusOK, nil)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Brand deleted"})
 }
 
 func (handler *BrandHandler) UpdateBrand(context echo.Context) error {
 	var brand models.Brand
 	err := context.Bind(&brand)
 	if err != nil {
-		return context.JSON(http.StatusUnprocessableEntity, err.Error())
+		return context.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
 	}
 
 	ctx := context.Request().Context()
@@ -125,8 +121,8 @@ func (handler *BrandHandler) UpdateBrand(context echo.Context) error {
 
 	updatedBrand, err := handler.UseCase.UpdateBrand(ctx, &brand)
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		return context.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return context.JSON(http.StatusOK, updatedBrand)
+	return context.JSON(http.StatusOK, ResponseError{Message: "Brand updated", Data: updatedBrand})
 }

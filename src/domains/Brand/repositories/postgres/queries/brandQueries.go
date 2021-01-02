@@ -40,11 +40,9 @@ func (query brandQuery) GetBrandByID(context context.Context, id string) (*model
 	brand := new(models.Brand)
 
 	err := query.dbConnection.ModelContext(context, brand).Where("id = ?", id).Select()
-	if err.Error() == "pg: no rows in result set" {
+	if err != nil && err.Error() == "pg: no rows in result set" {
 		return nil, errors.New("Brand not found")
-	}
-
-	if err != nil {
+	} else if err != nil {
 		return nil, err
 	}
 

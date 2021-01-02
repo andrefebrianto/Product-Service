@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/andrefebrianto/rest-api/src/models"
 	"github.com/go-pg/pg/v10"
@@ -39,7 +38,7 @@ func (command brandCommand) CreateBrand(context context.Context, brand *models.B
 //UpdateBrand ...
 func (command brandCommand) UpdateBrand(context context.Context, brand *models.Brand) (*models.Brand, error) {
 	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
-		_, err := dbTransaction.ModelContext(context, brand).WherePK().Update()
+		_, err := dbTransaction.ModelContext(context, brand).Column("name", "updated_at").WherePK().Update()
 		if err != nil {
 			return err
 		}
@@ -59,7 +58,6 @@ func (command brandCommand) DeleteBrand(context context.Context, id string) erro
 	brand := &models.Brand{
 		ID: id,
 	}
-	fmt.Println(brand)
 	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		_, err := dbTransaction.ModelContext(context, brand).WherePK().Delete()
 		if err != nil {
