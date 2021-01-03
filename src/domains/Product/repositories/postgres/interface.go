@@ -12,6 +12,7 @@ type ProductCommand interface {
 	UpdateProduct(context context.Context, product *models.Product) (*models.Product, error)
 	UpdateProductStock(context context.Context, product *models.Product) (*models.Product, error)
 	DeleteProduct(context context.Context, id string) error
+	UpdatePurchasedStock(context context.Context, product *models.Product) (*models.Product, error)
 }
 
 // ProductQueries represent query function for product domain

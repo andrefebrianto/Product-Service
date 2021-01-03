@@ -17,15 +17,6 @@ type ProductHandler struct {
 	UseCase usecase.ProductUseCase
 }
 
-type productPayloadBuffer struct {
-	Name        string
-	Price       int
-	BrandId     string
-	Description string
-	Stock       int
-	Sold        int
-}
-
 func CreateProductHandler(e *echo.Echo, usecase usecases.ProductUseCase) {
 	handler := &ProductHandler{UseCase: usecase}
 
@@ -120,7 +111,6 @@ func (handler *ProductHandler) UpdateProduct(context echo.Context) error {
 
 // AddProduct ...
 func (handler *ProductHandler) AddProduct(context echo.Context) error {
-	// var buffer productPayloadBuffer
 	var product models.Product
 	err := context.Bind(&product)
 	if err != nil {

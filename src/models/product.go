@@ -21,22 +21,14 @@ type Product struct {
 }
 
 // BuyProduct will subtract product stock and add product sold
-func (product *Product) BuyProduct(amount int) (int, error) {
+func (product *Product) BuyProduct(amount int) (stock, sold int, err error) {
 	if product.Stock < amount {
-		return 0, errors.New("Insufficient stock")
+		return 0, 0, errors.New("Insufficient stock")
 	}
 
 	product.Stock = product.Stock - amount
 	product.Sold = product.Sold + amount
 	product.UpdatedAt = time.Now()
 
-	return product.Stock, nil
-}
-
-// AddStock will add product stock
-func (product *Product) AddStock(amount int) (int, error) {
-	product.Stock = product.Stock + amount
-	product.UpdatedAt = time.Now()
-
-	return product.Stock, nil
+	return product.Stock, product.Sold, nil
 }

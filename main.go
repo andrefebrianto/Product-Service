@@ -91,6 +91,7 @@ func main() {
 
 	controller.CreateBrandHandler(httpServer, brandUC)
 	controller.CreateProductHandler(httpServer, productUC)
+	controller.CreatePurchaseHandler(httpServer, productUC)
 
 	// Start server
 	httpServer.Logger.Fatal(httpServer.Start(config.GetString("server.port")))
