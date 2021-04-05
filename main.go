@@ -12,6 +12,7 @@ import (
 	productRepoQuery "github.com/andrefebrianto/rest-api/src/domains/Product/repositories/postgres/queries"
 	productUseCase "github.com/andrefebrianto/rest-api/src/domains/Product/usecases"
 	controller "github.com/andrefebrianto/rest-api/src/httpcontroller"
+	"github.com/andrefebrianto/rest-api/src/utilities/databases/elasticsearch"
 	"github.com/andrefebrianto/rest-api/src/utilities/databases/postgresql"
 
 	"github.com/labstack/echo/v4"
@@ -70,19 +71,39 @@ func main() {
 
 	postgresql.InitConnection(postgreSQLConfigs)
 
+	//Initialize MongoDB database
 	var mongoDBConfigs []map[string]interface{}
 	err = config.UnmarshalKey("mongoDB", &mongoDBConfigs)
 	if err != nil {
 		panic(err)
 	}
 
-	connection, err := postgresql.GetConnection("product-db")
-	//Create Repositories
-	brandCommand := brandRepoCommand.CreateRepository(connection)
-	brandQuery := brandRepoQuery.CreateRepository(connection)
+	//Initialize ElastocSearch database
+	var elasticSearchConfigs []map[string]interface{}
+	err = config.UnmarshalKey("elasticsearch", &elasticSearchConfigs)
+	if err != nil {
+		panic(err)
+	}
 
-	productCommand := productRepoCommand.CreateRepository(connection)
-	productQuery := productRepoQuery.CreateRepository(connection)
+	elasticsearch.InitConnection(elasticSearchConfigs)
+
+	pgClient, err := postgresql.GetConnection("product-db")
+	if err != nil {
+		panic(err)
+	}
+
+	esClient, err := elasticsearch.GetConnection("product-catalog-db")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(esClient)
+	//Create Repositories
+	brandCommand := brandRepoCommand.CreateRepository(pgClient)
+	brandQuery := brandRepoQuery.CreateRepository(pgClient)
+
+	productCommand := productRepoCommand.CreateRepository(pgClient)
+	productQuery := productRepoQuery.CreateRepository(pgClient)
 
 	//Create Use Cases
 	brandUC := brandUseCase.CreateBrandUseCase(brandCommand, brandQuery, contextTimeout)

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/andrefebrianto/rest-api/src/models"
 	"github.com/go-pg/pg/v10"
@@ -19,14 +20,22 @@ func CreateRepository(connection *pg.DB) brandCommand {
 
 //CreateBrand ...
 func (command brandCommand) CreateBrand(context context.Context, brand *models.Brand) (*models.Brand, error) {
-	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
-		_, err := dbTransaction.ModelContext(context, brand).Insert()
-		if err != nil {
-			return err
-		}
+	errors := make(chan error)
 
-		return err
-	})
+	go func() {
+		err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
+			_, err := dbTransaction.ModelContext(context, brand).Insert()
+			if err != nil {
+				return err
+			}
+
+			return err
+		})
+		errors <- err
+		fmt.Println(brand)
+	}()
+
+	err := <-errors
 
 	if err != nil {
 		return nil, err
