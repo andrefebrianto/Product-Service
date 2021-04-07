@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/andrefebrianto/rest-api/src/models"
 	"github.com/go-pg/pg/v10"
@@ -10,32 +9,24 @@ import (
 
 //BrandCommand ...
 type brandCommand struct {
-	dbConnection *pg.DB
+	pgClient *pg.DB
 }
 
 //CreateRepository ...
-func CreateRepository(connection *pg.DB) brandCommand {
-	return brandCommand{connection}
+func CreateRepository(pgClient *pg.DB) brandCommand {
+	return brandCommand{pgClient}
 }
 
 //CreateBrand ...
 func (command brandCommand) CreateBrand(context context.Context, brand *models.Brand) (*models.Brand, error) {
-	errors := make(chan error)
-
-	go func() {
-		err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
-			_, err := dbTransaction.ModelContext(context, brand).Insert()
-			if err != nil {
-				return err
-			}
-
+	err := command.pgClient.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
+		_, err := dbTransaction.ModelContext(context, brand).Insert()
+		if err != nil {
 			return err
-		})
-		errors <- err
-		fmt.Println(brand)
-	}()
+		}
 
-	err := <-errors
+		return err
+	})
 
 	if err != nil {
 		return nil, err
@@ -46,7 +37,7 @@ func (command brandCommand) CreateBrand(context context.Context, brand *models.B
 
 //UpdateBrand ...
 func (command brandCommand) UpdateBrand(context context.Context, brand *models.Brand) (*models.Brand, error) {
-	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
+	err := command.pgClient.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		_, err := dbTransaction.ModelContext(context, brand).Column("name", "updated_at").WherePK().Update()
 		if err != nil {
 			return err
@@ -67,7 +58,7 @@ func (command brandCommand) DeleteBrand(context context.Context, id string) erro
 	brand := &models.Brand{
 		ID: id,
 	}
-	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
+	err := command.pgClient.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		_, err := dbTransaction.ModelContext(context, brand).WherePK().Delete()
 		if err != nil {
 			return err

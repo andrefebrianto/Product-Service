@@ -2,35 +2,88 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"strings"
 
 	models "github.com/andrefebrianto/rest-api/src/models"
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-pg/pg/v10"
 )
 
+var ELASTIC_PRODUCT_CATALOG_INDEX = "product-catalog"
+
 //ProductCommand ...
 type productCommand struct {
-	dbConnection *pg.DB
+	pgClient *pg.DB
+	esClient *elasticsearch.Client
+}
+
+type productIndex struct {
+	ID        string
+	Name      string
+	Price     int
+	BrandName string
+	Stock     int
+	Sold      int
 }
 
 //CreateRepository ...
-func CreateRepository(connection *pg.DB) productCommand {
-	return productCommand{connection}
+func CreateRepository(pgClient *pg.DB, esClient *elasticsearch.Client) productCommand {
+	return productCommand{pgClient, esClient}
 }
 
 //CreateProduct ...
 func (command productCommand) CreateProduct(context context.Context, product *models.Product) (*models.Product, error) {
-	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
-		_, err := dbTransaction.ModelContext(context, product).Insert()
-		if err != nil {
+	pgInsertErrorCh := make(chan error)
+	pgSelectErrorCh := make(chan error)
+	esErrorCh := make(chan error)
+	brandCh := make(chan *models.Brand)
+
+	go func() {
+		err := command.pgClient.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
+			_, err := dbTransaction.ModelContext(context, product).Insert()
+			if err != nil {
+				return err
+			}
+
 			return err
-		}
+		})
+		pgInsertErrorCh <- err
+	}()
 
-		return err
-	})
+	go func() {
+		brand := new(models.Brand)
+		err := command.pgClient.ModelContext(context, brand).Where("id = ?", product.BrandId).Select()
+		pgSelectErrorCh <- err
+		brandCh <- brand
+	}()
 
-	if err != nil {
-		return nil, err
+	pgErr := <-pgInsertErrorCh
+	if pgErr != nil {
+		return nil, pgErr
+	}
+
+	pgErr = <-pgSelectErrorCh
+	if pgErr != nil {
+		return nil, pgErr
+	}
+
+	brand := <-brandCh
+
+	go func() {
+		productIdx := productIndex{ID: product.ID, Name: product.Name, BrandName: brand.Name, Price: product.Price, Stock: product.Stock, Sold: product.Sold}
+		stringObject, _ := json.Marshal(productIdx)
+
+		_, err := command.esClient.Index(ELASTIC_PRODUCT_CATALOG_INDEX, strings.NewReader(string(stringObject)), command.esClient.Index.WithDocumentID(product.ID))
+
+		esErrorCh <- err
+	}()
+
+	esErr := <-esErrorCh
+
+	if esErr != nil {
+		return nil, esErr
 	}
 
 	return product, nil
@@ -38,7 +91,7 @@ func (command productCommand) CreateProduct(context context.Context, product *mo
 
 //UpdateProduct ...
 func (command productCommand) UpdateProduct(context context.Context, product *models.Product) (*models.Product, error) {
-	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
+	err := command.pgClient.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		_, err := dbTransaction.ModelContext(context, product).Column("name", "price", "brand_id", "description", "stock", "sold", "updated_at").WherePK().Update()
 		if err != nil {
 			return err
@@ -56,8 +109,11 @@ func (command productCommand) UpdateProduct(context context.Context, product *mo
 
 //UpdateProductStock ...
 func (command productCommand) UpdateProductStock(context context.Context, product *models.Product) (*models.Product, error) {
-	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
+	err := command.pgClient.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		result, err := dbTransaction.ModelContext(context, product).Column("stock", "updated_at").WherePK().Update()
+		if err != nil {
+			return err
+		}
 
 		err = dbTransaction.ModelContext(context, product).WherePK().Select()
 
@@ -66,7 +122,7 @@ func (command productCommand) UpdateProductStock(context context.Context, produc
 		}
 
 		if result.RowsAffected() == 0 {
-			return errors.New("Product not found")
+			return errors.New("product not found")
 		}
 
 		return err
@@ -81,20 +137,36 @@ func (command productCommand) UpdateProductStock(context context.Context, produc
 
 //DeleteProduct ...
 func (command productCommand) DeleteProduct(context context.Context, id string) error {
-	product := &models.Product{
-		ID: id,
-	}
-	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
-		_, err := dbTransaction.ModelContext(context, product).WherePK().Delete()
-		if err != nil {
-			return err
+	pgErrCh := make(chan error)
+	esErrCh := make(chan error)
+
+	go func() {
+		product := &models.Product{
+			ID: id,
 		}
+		err := command.pgClient.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
+			_, err := dbTransaction.ModelContext(context, product).WherePK().Delete()
+			if err != nil {
+				return err
+			}
 
-		return err
-	})
+			return err
+		})
+		pgErrCh <- err
+	}()
 
-	if err != nil {
-		return err
+	go func() {
+		_, err := command.esClient.Delete(ELASTIC_PRODUCT_CATALOG_INDEX, id)
+		esErrCh <- err
+	}()
+
+	pgErr := <-pgErrCh
+	if pgErr != nil {
+		return pgErr
+	}
+	esErr := <-esErrCh
+	if pgErr != nil {
+		return esErr
 	}
 
 	return nil
@@ -102,9 +174,12 @@ func (command productCommand) DeleteProduct(context context.Context, id string) 
 
 //UpdateProductStock ...
 func (command productCommand) UpdatePurchasedStock(context context.Context, product *models.Product) (*models.Product, error) {
-	err := command.dbConnection.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
+	err := command.pgClient.RunInTransaction(context, func(dbTransaction *pg.Tx) error {
 		currentProduct := new(models.Product)
 		err := dbTransaction.ModelContext(context, currentProduct).Where("id = ?", product.ID).For("UPDATE").Select()
+		if err != nil {
+			return err
+		}
 		stock, sold, err := currentProduct.BuyProduct(product.Stock)
 		if err != nil {
 			return err
@@ -119,7 +194,7 @@ func (command productCommand) UpdatePurchasedStock(context context.Context, prod
 		}
 
 		if result.RowsAffected() == 0 {
-			return errors.New("Product not found")
+			return errors.New("product not found")
 		}
 
 		return err

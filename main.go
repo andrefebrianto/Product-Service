@@ -102,7 +102,7 @@ func main() {
 	brandCommand := brandRepoCommand.CreateRepository(pgClient)
 	brandQuery := brandRepoQuery.CreateRepository(pgClient)
 
-	productCommand := productRepoCommand.CreateRepository(pgClient)
+	productCommand := productRepoCommand.CreateRepository(pgClient, esClient)
 	productQuery := productRepoQuery.CreateRepository(pgClient)
 
 	//Create Use Cases
